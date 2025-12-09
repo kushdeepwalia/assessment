@@ -51,10 +51,11 @@ function DroppableBox({ id, children }) {
 
 const Assessment = () => {
    const [boxes, setBoxes] = useState(["A", "B", "C", "D"]);
-
+   const [mounted, setMounted] = useState(false);
    const [activeId, setActiveId] = useState(null);
 
    const onDragStart = (event) => {
+      setMounted(true);
       setActiveId(event.active.id);
    };
 
@@ -70,8 +71,8 @@ const Assessment = () => {
          updated[newIndex],
          updated[oldIndex],
       ];
-
       setBoxes(updated);
+      setMounted(false);
    };
 
    const activeItem = boxes.find((i) => i === activeId);
@@ -99,7 +100,7 @@ const Assessment = () => {
                <div className='min-w-60 cursor-pointer max-w-1/4 bg-amber-300 h-40'></div>
                <div className='min-w-60 cursor-pointer max-w-1/4 bg-amber-300 h-40'></div>
             </div>
-            {createPortal(
+            {mounted && createPortal(
                <DragOverlay adjustScale={false}>
                   {activeItem ? <Box label={activeItem} dragging /> : null}
                </DragOverlay>,
