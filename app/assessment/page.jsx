@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState } from 'react'
-import { DndContext, DragOverlay, useDraggable, useDroppable } from "@dnd-kit/core";
+import {
+   DndContext, DragOverlay, MouseSensor,
+   TouchSensor, useDraggable, useDroppable,
+   useSensor,
+   useSensors
+} from "@dnd-kit/core";
 import { createPortal } from 'react-dom';
 
 function Box({ label, dragging }) {
@@ -54,6 +59,16 @@ const Assessment = () => {
    const [mounted, setMounted] = useState(false);
    const [activeId, setActiveId] = useState(null);
 
+   const mouseSensor = useSensor(MouseSensor);
+   const touchSensor = useSensor(TouchSensor, {
+      activationConstraint: {
+         delay: 150,  // long-press start before drag
+         tolerance: 5 // reduce accidental drags
+      }
+   });
+
+   const sensors = useSensors(mouseSensor, touchSensor);
+
    const onDragStart = (event) => {
       setMounted(true);
       setActiveId(event.active.id);
@@ -86,7 +101,20 @@ const Assessment = () => {
             &nbsp;
             <span>What is your name? </span>
          </div>
-         <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+         <DndContext
+            sensors={sensors}
+            onDragStart={(event) => {
+               document.body.style.overflow = "hidden"; // Disable scrolling
+               onDragStart(event)
+            }}
+            onDragEnd={(event) => {
+               document.body.style.overflow = ""; // Re-enable scrolling
+               onDragEnd(event);
+            }}
+            onDragCancel={() => {
+               document.body.style.overflow = "";
+            }}
+         >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 p-6 bg-white rounded-3xl">
                {
                   boxes.map((box) => (
