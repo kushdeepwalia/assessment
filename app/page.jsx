@@ -2,35 +2,76 @@
 
 import React, { useState } from 'react'
 import { setCookie, getCookie, deleteCookie } from "cookies-next";
+import { useRouter } from 'next/navigation';
 
 const Home = () => {
    const [name, setName] = useState("")
    const [age, setAge] = useState("")
+   const router = useRouter();
 
    function onSubmit() {
+      if (name === "" || age === "") {
+         alert("Please fill in all fields.");
+         return;
+      }
       setCookie("name", name)
       setCookie("age", age);
-
-      alert(getCookie("name"));
+      router.push("/assessment");
    }
 
    return (
-      <div className='w-full h-screen flex justify-center items-center overflow-hidden'>
-         <div className='flex w-full items-center flex-col gap-y-5'>
-            <h3 className='font-bold text-2xl'>Assessment</h3>
-            <div className='flex xl:w-1/3 items-center w-2/3 md:w-1/2 flex-col gap-y-3'>
-               <div className='flex flex-col gap-y-2 w-full'>
-                  <label htmlFor="name" className='capitalize'>name</label>
-                  <input required value={name} onChange={(e) => setName(e.target.value)} type="text" name="name" id="name" className='border px-3 py-2 outline-none border-gray-400 rounded' />
+      <div className="w-full min-h-screen flex justify-center items-center bg-linear-to-b from-gray-100 to-blue-400 p-6">
+         <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md border border-gray-100">
+
+            <h3 className="font-bold text-2xl text-center text-blue-600 mb-6">
+               Assessment
+            </h3>
+
+            <div className="flex flex-col gap-y-5">
+
+               <div className="flex flex-col gap-y-1">
+                  <label htmlFor="name" className="text-gray-700 font-medium">Name</label>
+                  <input
+                     required
+                     value={name}
+                     onChange={(e) => setName(e.target.value)}
+                     type="text"
+                     autoComplete='off'
+                     name="name"
+                     id="name"
+                     placeholder="Enter your name"
+                     className="border border-gray-300 px-4 py-2 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
                </div>
-               <div className='flex flex-col gap-y-2 w-full'>
-                  <label htmlFor="age" className='capitalize'>age</label>
-                  <input required value={age} onChange={(e) => setAge(e.target.value)} min={1} type="number" name="age" id="age" className='border px-3 py-2 outline-none appearance-none border-gray-400 rounded' />
+
+               <div className="flex flex-col gap-y-1">
+                  <label htmlFor="age" className="text-gray-700 font-medium">Age</label>
+                  <input
+                     required
+                     value={age}
+                     onChange={(e) => setAge(e.target.value)}
+                     min={1}
+                     type="number"
+                     name="age"
+                     autoComplete='off'
+                     id="age"
+                     placeholder="Enter your age"
+                     className="border appearance-none border-gray-300 px-4 py-2 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
                </div>
-               <input onClick={() => onSubmit()} className='py-2 px-3 bg-blue-500 cursor-pointer rounded text-white font-semibold mt-3' type="submit" value="Submit" />
+
+               <button
+                  onClick={() => onSubmit()}
+                  type="submit"
+                  className="w-full cursor-pointer py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm transition-transform duration-200 hover:scale-[1.02]"
+               >
+                  Submit
+               </button>
+
             </div>
          </div>
       </div>
+
    )
 }
 

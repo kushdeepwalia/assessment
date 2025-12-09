@@ -1,0 +1,181 @@
+[
+   {
+      "id": 1,
+      "type": "sequence",
+      "question": "Arrange the days in correct order starting from Monday",
+      "options": [
+         "Wednesday",
+         "Monday",
+         "Thursday",
+         "Tuesday"
+      ],
+      "correctOrder": [
+         "Monday",
+         "Tuesday",
+         "Wednesday",
+         "Thursday"
+      ]
+   },
+   {
+      "id": 2,
+      "type": "select",
+      "question": "Select the smallest number",
+      "options": [
+         "10",
+         "3",
+         "7",
+         "12"
+      ],
+      "correctValue": "3"
+   },
+   {
+      "id": 3,
+      "type": "sequence",
+      "question": "Arrange the alphabet letters in A-Z order",
+      "options": [
+         "C",
+         "B",
+         "A",
+         "D"
+      ],
+      "correctOrder": [
+         "A",
+         "B",
+         "C",
+         "D"
+      ]
+   },
+   {
+      "id": 4,
+      "type": "sequence",
+      "question": "Arrange the numbers in ascending order",
+      "options": [
+         "30",
+         "5",
+         "12",
+         "25"
+      ],
+      "correctOrder": [
+         "5",
+         "12",
+         "25",
+         "30"
+      ]
+   },
+   {
+      "id": 5,
+      "type": "select",
+      "question": "Pick the animal",
+      "options": [
+         "Car",
+         "Cat",
+         "Phone",
+         "Chair"
+      ],
+      "correctValue": "Cat"
+   },
+   {
+      "id": 6,
+      "type": "sequence",
+      "question": "Arrange the colors based on Rainbow order (VIBGYOR)",
+      "options": [
+         "Yellow",
+         "Red",
+         "Orange",
+         "Blue"
+      ],
+      "correctOrder": [
+         "Red",
+         "Orange",
+         "Yellow",
+         "Blue"
+      ]
+   },
+   {
+      "id": 7,
+      "type": "select",
+      "question": "Select the capital city",
+      "options": [
+         "Paris",
+         "Apple",
+         "Dog",
+         "Chair"
+      ],
+      "correctValue": "Paris"
+   },
+   {
+      "id": 8,
+      "type": "sequence",
+      "question": "Arrange from shortest to longest",
+      "options": [
+         "cm",
+         "km",
+         "m",
+         "mm"
+      ],
+      "correctOrder": [
+         "mm",
+         "cm",
+         "m",
+         "km"
+      ]
+   },
+   {
+      "id": 9,
+      "type": "select",
+      "question": "Pick the odd one out",
+      "options": [
+         "Circle",
+         "Square",
+         "Triangle",
+         "Car"
+      ],
+      "correctValue": "Car"
+   },
+   {
+      "id": 10,
+      "type": "sequence",
+      "question": "Arrange numbers in descending order",
+      "options": [
+         "2",
+         "9",
+         "6",
+         "3"
+      ],
+      "correctOrder": [
+         "9",
+         "6",
+         "3",
+         "2"
+      ]
+   },
+   {
+      "id": 11,
+      "type": "select",
+      "question": "Which one is a fruit?",
+      "options": [
+         "Apple",
+         "Table",
+         "Shoe",
+         "Laptop"
+      ],
+      "correctValue": "Apple"
+   },
+   {
+      "id": 12,
+      "type": "sequence",
+      "question": "Arrange the events in daily routine order",
+      "options": [
+         "Sleep",
+         "Lunch",
+         "Wake up",
+         "Breakfast"
+      ],
+      "correctOrder": [
+         "Wake up",
+         "Breakfast",
+         "Lunch",
+         "Sleep"
+      ]
+   }
+]
