@@ -7,7 +7,7 @@ import { createPortal } from 'react-dom';
 function Box({ label, dragging }) {
    return (
       <div
-         className={`w-24 h-24 flex items-center justify-center
+         className={`w-36 h-36 flex items-center justify-center
       rounded-xl font-bold text-white shadow-md select-none
       transition
       ${dragging ? "bg-blue-400" : "bg-blue-600"}
@@ -39,9 +39,9 @@ function DroppableBox({ id, children }) {
    return (
       <div
          ref={setNodeRef}
-         className={`w-24 h-24 rounded-xl flex items-center justify-center
+         className={`w-full h-48 rounded-xl flex items-center justify-center
         border-2 transition
-        ${isOver ? "border-blue-500" : "border-blue-500"}
+        ${isOver ? "border-blue-500" : "border-white"}
       `}
       >
          {children}
@@ -87,7 +87,7 @@ const Assessment = () => {
             <span>What is your name? </span>
          </div>
          <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-            <div className='w-full flex flex-row flex-wrap gap-5'>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 p-6 bg-white rounded-3xl">
                {
                   boxes.map((box) => (
                      <DroppableBox key={box} id={box}>
@@ -95,10 +95,6 @@ const Assessment = () => {
                      </DroppableBox>
                   ))
                }
-               <div className='min-w-60 cursor-pointer max-w-1/4 bg-amber-300 h-40'></div>
-               <div className='min-w-60 cursor-pointer max-w-1/4 bg-amber-300 h-40'></div>
-               <div className='min-w-60 cursor-pointer max-w-1/4 bg-amber-300 h-40'></div>
-               <div className='min-w-60 cursor-pointer max-w-1/4 bg-amber-300 h-40'></div>
             </div>
             {mounted && createPortal(
                <DragOverlay adjustScale={false}>
