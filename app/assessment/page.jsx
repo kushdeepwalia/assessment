@@ -50,7 +50,7 @@ function Box({ dragging, color }) {
             backgroundColor: color,
             opacity: dragging ? 0.7 : 1,
          }}
-         className="sm:w-36 sm:h-36 w-24 h-24 rounded-xl shadow-md select-none transition"
+         className="md:w-36 md:h-36 sm:w-24 sm:h-24 w-16 h-16 rounded-xl shadow-md select-none transition"
       />
    );
 }
@@ -76,7 +76,7 @@ function DroppableBox({ id, children }) {
    return (
       <div
          ref={setNodeRef}
-         className={`w-full sm:h-48 h-36 rounded-xl flex items-center justify-center
+         className={`w-full sm:h-32 md:h-44 h-20 rounded-xl flex items-center justify-center
         border-2 transition
         ${isOver ? "border-blue-500" : "border-white"}
       `}
@@ -273,6 +273,44 @@ export default function Assessment() {
    const goPrev = () =>
       setCurrentIndex((i) => Math.max(i - 1, 0));
 
+   const getVisiblePages = (total, currentIndex) => {
+      const current = currentIndex + 1; // 1-based
+      const pages = new Set();
+
+      // First 2
+      pages.add(1);
+      pages.add(2);
+
+      // Current ± 1
+      pages.add(current - 1);
+      pages.add(current);
+      pages.add(current + 1);
+
+      // Last 2
+      pages.add(total - 1);
+      pages.add(total);
+
+      return [...pages]
+         .filter((p) => p >= 1 && p <= total)
+         .sort((a, b) => a - b);
+   };
+
+   const withDots = (pages) => {
+      const result = [];
+
+      for (let i = 0; i < pages.length; i++) {
+         if (i > 0 && pages[i] - pages[i - 1] > 1) {
+            result.push("dots");
+         }
+         result.push(pages[i]);
+      }
+
+      return result;
+   };
+
+
+
+
    /* ---------- SUBMIT ---------- */
 
    const handleSubmit = async () => {
@@ -307,26 +345,46 @@ export default function Assessment() {
             </div>
 
             {/* Jump Buttons */}
-            <div className="flex gap-1">
-               {questionsData.map((q, index) => (
-                  <button
-                     key={q.id}
-                     onClick={() => setCurrentIndex(index)}
-                     className={`px-2 py-1 rounded-lg text-sm font-medium
-                ${answers[q.id]
-                           ? "bg-green-500 text-white"
-                           : ""
-                        }
-                ${currentIndex === index && !answers[q.id]
-                           ? "bg-blue-600 text-white"
-                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }
-              `}
-                  >
-                     {q.id}
-                  </button>
-               ))}
+            <div className="flex-1 flex justify-center px-2">
+               <div className="flex gap-1 items-center whitespace-nowrap">
+                  {withDots(
+                     getVisiblePages(totalQuestions, currentIndex)
+                  ).map((item, idx) => {
+                     if (item === "dots") {
+                        return (
+                           <span
+                              key={`dots-${idx}`}
+                              className="px-2 text-gray-400 select-none"
+                           >
+                              …
+                           </span>
+                        );
+                     }
+
+                     const pageIndex = item - 1;
+                     const answered = answers[item];
+
+                     return (
+                        <button
+                           key={item}
+                           onClick={() => setCurrentIndex(pageIndex)}
+                           className={`w-8 h-8 rounded-full text-sm font-medium transition
+                           ${currentIndex === pageIndex
+                                 ? "bg-blue-600 text-white"
+                                 : answered
+                                    ? "bg-green-500 text-white"
+                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                              }
+                           `}
+                        >
+                           {item}
+                        </button>
+                     );
+                  })}
+               </div>
             </div>
+
+
 
             <button
                onClick={() => {
@@ -366,7 +424,7 @@ export default function Assessment() {
                onDragEnd={onDragEnd}
                onDragCancel={onDragCancel}
             >
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-0 md:gap-4 bg-white p-5 rounded-2xl shadow max-w-xl md:max-w-3xl w-full">
+               <div className="grid grid-cols-1 sm:grid-cols-4 gap-0 md:gap-2 bg-white px-10 sm:py-2 py-5 md:px-7 md:py-5 rounded-2xl shadow max-w-xl md:max-w-3xl sm:w-full w-2/3">
                   {colors.map((item) => (
                      <DroppableBox key={item.id} id={item.id}>
                         <DraggableBox id={item.id} color={item.color} />
@@ -387,7 +445,7 @@ export default function Assessment() {
             </DndContext>
 
             {/* Buttons */}
-            <div className="flex justify-between items-center w-full max-w-xl md:max-w-3xl mt-6">
+            <div className="flex justify-between items-center max-w-xl md:max-w-3xl sm:w-full w-2/3 mt-6">
                {/* Prev */}
                {currentIndex > 0 && (
                   <button
