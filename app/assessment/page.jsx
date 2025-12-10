@@ -180,7 +180,6 @@ export default function Assessment() {
       });
       return initial;
    });
-
    const router = useRouter();
    const question = questionsData[currentIndex];
    const colors = questionColors[question.id] || [];
@@ -273,40 +272,85 @@ export default function Assessment() {
    const goPrev = () =>
       setCurrentIndex((i) => Math.max(i - 1, 0));
 
-   const getVisiblePages = (total, currentIndex) => {
-      const current = currentIndex + 1; // 1-based
-      const pages = new Set();
+   /* ---------- BREAKPOINT HOOK ---------- */
+   const useBreakpoint = () => {
+      const [device, setDevice] = useState("desktop");
 
-      // First 2
-      pages.add(1);
-      pages.add(2);
+      useEffect(() => {
+         const check = () => {
+            const w = window.innerWidth;
+            if (w < 640) setDevice("mobile");       // < sm
+            else if (w < 1024) setDevice("tablet"); // sm → lg
+            else setDevice("desktop");              // ≥ lg
+         };
 
-      // Current ± 1
-      pages.add(current - 1);
-      pages.add(current);
-      pages.add(current + 1);
+         check();
+         window.addEventListener("resize", check);
+         return () => window.removeEventListener("resize", check);
+      }, []);
 
-      // Last 2
-      pages.add(total - 1);
-      pages.add(total);
-
-      return [...pages]
-         .filter((p) => p >= 1 && p <= total)
-         .sort((a, b) => a - b);
+      return device;
    };
 
-   const withDots = (pages) => {
-      const result = [];
 
-      for (let i = 0; i < pages.length; i++) {
-         if (i > 0 && pages[i] - pages[i - 1] > 1) {
-            result.push("dots");
-         }
-         result.push(pages[i]);
+   /* ---------- PAGINATION LOGIC ---------- */
+   const getPagination = (total, currentIndex, device) => {
+      const current = currentIndex + 1;
+
+      if (device === "desktop") {
+         return Array.from({ length: total }, (_, i) => i + 1);
       }
 
-      return result;
+      // 📱 MOBILE: max 4 items (including dots)
+      if (device === "mobile") {
+         // Always show first & last
+         if (total <= 4) {
+            return Array.from({ length: total }, (_, i) => i + 1);
+         }
+
+         if (current <= 2) {
+            return [1, 2, "dots", total - 1, total];
+         }
+
+         if (current >= total - 1) {
+            return [1, "dots", total - 2, total - 1, total];
+         }
+
+         return [1, "dots", current, "dots", total];
+      }
+
+      // 💊 TABLET / DESKTOP: max 7 items
+      if (total <= 7) {
+         return Array.from({ length: total }, (_, i) => i + 1);
+      }
+
+      // Near start
+      if (current <= 3) {
+         return [1, 2, 3, "dots", total - 1, total];
+      }
+
+      // Near end
+      if (current >= total - 2) {
+         return [1, 2, "dots", total - 2, total - 1, total];
+      }
+
+      // Middle
+      return [
+         1,
+         2,
+         "dots",
+         current - 1,
+         current,
+         current + 1,
+         "dots",
+         total - 1,
+         total,
+      ];
    };
+
+
+
+   const device = useBreakpoint();
 
 
 
@@ -339,73 +383,72 @@ export default function Assessment() {
    return (
       <div className="min-h-screen bg-gray-100">
          {/* Top Navbar */}
-         <div className="fixed top-0 w-full bg-white shadow-md flex justify-between items-center px-4 py-3 z-50">
-            <div className="font-semibold text-gray-700">
+
+         <div className="fixed top-0 w-full bg-white shadow-md flex items-center px-4 py-3 z-50">
+            {/* LEFT */}
+            <div className="font-semibold text-gray-700 whitespace-nowrap">
                Completed: {Object.keys(answers).length} / {totalQuestions}
             </div>
 
-            {/* Jump Buttons */}
+            {/* CENTER – PAGINATION */}
             <div className="flex-1 flex justify-center px-2">
                <div className="flex gap-1 items-center whitespace-nowrap">
-                  {withDots(
-                     getVisiblePages(totalQuestions, currentIndex)
-                  ).map((item, idx) => {
-                     if (item === "dots") {
+                  {getPagination(totalQuestions, currentIndex, device).map(
+                     (item, idx) => {
+                        if (item === "dots") {
+                           return (
+                              <span
+                                 key={`dots-${idx}`}
+                                 className="px-2 text-gray-400 select-none"
+                              >
+                                 …
+                              </span>
+                           );
+                        }
+
+                        const pageIndex = item - 1;
+                        const answered = answers[item];
+
                         return (
-                           <span
-                              key={`dots-${idx}`}
-                              className="px-2 text-gray-400 select-none"
+                           <button
+                              key={item}
+                              onClick={() => setCurrentIndex(pageIndex)}
+                              className={`w-7 h-7 sm:w-8 sm:h-8
+                rounded-full text-xs sm:text-sm
+                font-medium transition
+                ${currentIndex === pageIndex
+                                    ? "bg-blue-600 text-white"
+                                    : answered
+                                       ? "bg-green-500 text-white"
+                                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                 }
+              `}
                            >
-                              …
-                           </span>
+                              {item}
+                           </button>
                         );
                      }
-
-                     const pageIndex = item - 1;
-                     const answered = answers[item];
-
-                     return (
-                        <button
-                           key={item}
-                           onClick={() => setCurrentIndex(pageIndex)}
-                           className={`w-8 h-8 rounded-full text-sm font-medium transition
-                           ${currentIndex === pageIndex
-                                 ? "bg-blue-600 text-white"
-                                 : answered
-                                    ? "bg-green-500 text-white"
-                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                              }
-                           `}
-                        >
-                           {item}
-                        </button>
-                     );
-                  })}
+                  )}
                </div>
             </div>
 
-
-
+            {/* RIGHT */}
             <button
                onClick={() => {
                   if (submit.toLowerCase() === "submit") {
                      handleSubmit();
-                  }
-                  else if (submit.toLowerCase() === "submitting") {
-                     alert("Please wait while the assessment is being submitted")
-                  }
-                  else if (submit.toLowerCase() === "submitted") {
+                  } else if (submit.toLowerCase() === "submitting") {
+                     alert("Please wait while the assessment is being submitted");
+                  } else if (submit.toLowerCase() === "submitted") {
                      alert("Assessment already submitted");
                   }
-                  else {
-                     console.log("Error");
-                  }
                }}
-               className="px-3 py-1 cursor-pointer bg-purple-600 text-white rounded-lg font-medium"
+               className="px-3 py-1 cursor-pointer bg-purple-600 text-white rounded-lg font-medium whitespace-nowrap"
             >
                {submit}
             </button>
          </div>
+
 
          <div className="flex flex-col items-center pt-24 px-4">
             <h2 className="text-base md:text-lg font-semibold mb-2 text-center">
