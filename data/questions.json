@@ -26,7 +26,12 @@
          "7",
          "12"
       ],
-      "correctValue": "3"
+      "correctOrder": [
+         "3",
+         "7",
+         "10",
+         "12"
+      ]
    },
    {
       "id": 3,
@@ -63,18 +68,6 @@
       ]
    },
    {
-      "id": 5,
-      "type": "select",
-      "question": "Pick the animal",
-      "options": [
-         "Car",
-         "Cat",
-         "Phone",
-         "Chair"
-      ],
-      "correctValue": "Cat"
-   },
-   {
       "id": 6,
       "type": "sequence",
       "question": "Arrange the colors based on Rainbow order (VIBGYOR)",
@@ -90,18 +83,6 @@
          "Yellow",
          "Blue"
       ]
-   },
-   {
-      "id": 7,
-      "type": "select",
-      "question": "Select the capital city",
-      "options": [
-         "Paris",
-         "Apple",
-         "Dog",
-         "Chair"
-      ],
-      "correctValue": "Paris"
    },
    {
       "id": 8,
@@ -121,18 +102,6 @@
       ]
    },
    {
-      "id": 9,
-      "type": "select",
-      "question": "Pick the odd one out",
-      "options": [
-         "Circle",
-         "Square",
-         "Triangle",
-         "Car"
-      ],
-      "correctValue": "Car"
-   },
-   {
       "id": 10,
       "type": "sequence",
       "question": "Arrange numbers in descending order",
@@ -148,18 +117,6 @@
          "3",
          "2"
       ]
-   },
-   {
-      "id": 11,
-      "type": "select",
-      "question": "Which one is a fruit?",
-      "options": [
-         "Apple",
-         "Table",
-         "Shoe",
-         "Laptop"
-      ],
-      "correctValue": "Apple"
    },
    {
       "id": 12,

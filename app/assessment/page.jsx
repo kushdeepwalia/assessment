@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import questionsData from "@/data/questions.json";
 import {
    DndContext, DragOverlay, MouseSensor, TouchSensor,
@@ -10,13 +10,13 @@ import { createPortal } from "react-dom";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 
-function Box({ label, dragging }) {
+function Box({ label, dragging, color }) {
    return (
       <div
+         style={{ backgroundColor: color, opacity: dragging ? "70%" : "unset" }}
          className={`sm:w-36 sm:h-36 w-24 h-24 flex items-center justify-center
       rounded-xl font-bold sm:text-base text-sm text-white shadow-md select-none
       transition
-      ${dragging ? "bg-blue-400" : "bg-blue-600"}
     `}
       >
          {label}
@@ -24,7 +24,7 @@ function Box({ label, dragging }) {
    );
 }
 
-function DraggableBox({ id, label, showHeight }) {
+function DraggableBox({ id, label, showHeight, color }) {
    const { setNodeRef, listeners, attributes } = useDraggable({ id });
 
    return (
@@ -34,7 +34,7 @@ function DraggableBox({ id, label, showHeight }) {
          {...attributes}
          className={`cursor-move flex items-center justify-center ${showHeight ? "sm:h-48 h-36" : ""}`}
       >
-         <Box label={label} />
+         <Box label={label} color={color} />
       </div>
    );
 }
@@ -55,6 +55,54 @@ function DroppableBox({ id, children }) {
    );
 }
 
+const generateColorPalette = (index) => {
+   // 1. Random hue (0–360)
+   const hue = Math.floor(Math.random() * 360);
+
+   // 2. Controlled saturation (keeps colors rich)
+   const saturation = 60 + Math.random() * 15; // 60–75%
+
+   // 3. SAFE dark-lightness range (no black / grey / white)
+   const MIN_L = 22;
+   const MAX_L = 42;
+
+   const arr = [];
+
+   while (arr.length < 4) {
+      const num =
+         Math.floor(Math.random() * (MAX_L - MIN_L + 1)) + MIN_L;
+
+      const isValid = arr.every(
+         (existing) => Math.abs(existing - num) >= 10
+      );
+
+      if (isValid) {
+         arr.push(num);
+      }
+   }
+
+   // Optional: darker → lighter order
+   arr.sort((a, b) => a - b);
+
+   const shades = arr.map(
+      (lightness) => `hsl(${hue}, ${saturation}%, ${lightness}%)`
+   );
+
+   return shades;
+};
+
+
+const generateColorMap = (options, index) => {
+   const shades = generateColorPalette(index);
+   const map = {};
+
+   options.forEach((opt, i) => {
+      map[opt] = shades[i];
+   });
+
+   return map;
+};
+
 export default function Assessment() {
    const totalQuestions = questionsData.length;
    const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,8 +110,17 @@ export default function Assessment() {
    const [activeId, setActiveId] = useState(null);
    const [mounted, setMounted] = useState(false);
 
+
    const question = questionsData[currentIndex];
+
+   const [colorMap, setColorMap] = useState(
+      generateColorMap(question.options, currentIndex)
+   );
    const boxes = question.options;
+
+   useEffect(() => {
+      setColorMap(generateColorMap(question.options, currentIndex));
+   }, [currentIndex]);
 
    const router = useRouter();
 
@@ -194,9 +251,9 @@ export default function Assessment() {
                {/* TYPE 1: SEQUENCE / ORDER QUESTIONS */}
                {question.correctOrder && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-0 md:gap-4 bg-white p-5 rounded-2xl shadow max-w-xl md:max-w-3xl w-full">
-                     {boxes.map((box) => (
+                     {boxes.map((box, index) => (
                         <DroppableBox key={box} id={box}>
-                           <DraggableBox id={box} label={box} />
+                           <DraggableBox color={colorMap[box]} id={box} label={""} />
                         </DroppableBox>
                      ))}
                   </div>
