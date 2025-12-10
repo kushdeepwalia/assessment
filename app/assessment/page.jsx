@@ -13,8 +13,33 @@ import {
    useSensors,
 } from "@dnd-kit/core";
 import { createPortal } from "react-dom";
-import { deleteCookie, getCookie, setCookie } from "cookies-next";
+import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
+
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+const saveAssessmentToFirebase = async (data) => {
+   console.log("🔥 saveAssessmentToFirebase START");
+
+   try {
+      console.log("🔥 Before addDoc");
+
+      const ref = await addDoc(collection(db, "assessments"), {
+         ...data,
+         createdAt: serverTimestamp(),
+      });
+
+      console.log("✅ Saved with ID:", ref.id);
+   } catch (error) {
+      console.error("❌ Firebase error:", error);
+      throw error;
+   } finally {
+      console.log("🔥 saveAssessmentToFirebase END");
+   }
+};
+
+
 
 /* ---------- UI COMPONENTS ---------- */
 
@@ -223,6 +248,7 @@ export default function Assessment() {
             ...prevAns,
             [qId]: {
                isCorrect,
+               colors: questionColors[qId],
                order: userOrderIds,
             },
          }));
@@ -248,17 +274,15 @@ export default function Assessment() {
 
    /* ---------- SUBMIT ---------- */
 
-   const handleSubmit = () => {
+   const handleSubmit = async () => {
       const data = {
          name: getCookie("name"),
          age: getCookie("age"),
-         answers: JSON.stringify(answers),
-         timestamp: new Date().toISOString(),
+         answers,
+         totalQuestions,
       };
-      setCookie("assessmentData", JSON.stringify(data));
-      console.log("Submitted Data:", data);
-      deleteCookie("name");
-      deleteCookie("age");
+      console.log(data);
+      await saveAssessmentToFirebase(data);
 
       alert("Assessment Submitted! Thank you.");
       router.push("/");
