@@ -169,6 +169,7 @@ export default function Assessment() {
    const [answers, setAnswers] = useState({});
    const [activeId, setActiveId] = useState(null);
    const [mounted, setMounted] = useState(false);
+   const [submit, setSubmit] = useState("Submit");
 
    // Colors stored per question: { [questionId]: ColorObject[] }
    const [questionColors, setQuestionColors] = useState(() => {
@@ -275,6 +276,7 @@ export default function Assessment() {
    /* ---------- SUBMIT ---------- */
 
    const handleSubmit = async () => {
+      setSubmit("Submitting");
       const data = {
          name: getCookie("name"),
          age: getCookie("age"),
@@ -283,6 +285,7 @@ export default function Assessment() {
       };
       console.log(data);
       await saveAssessmentToFirebase(data);
+      setSubmit("Submitted");
 
       alert("Assessment Submitted! Thank you.");
       router.push("/");
@@ -326,10 +329,23 @@ export default function Assessment() {
             </div>
 
             <button
-               onClick={handleSubmit}
+               onClick={() => {
+                  if (submit.toLowerCase() === "submit") {
+                     handleSubmit();
+                  }
+                  else if (submit.toLowerCase() === "submitting") {
+                     alert("Please wait while the assessment is being submitted")
+                  }
+                  else if (submit.toLowerCase() === "submitted") {
+                     alert("Assessment already submitted");
+                  }
+                  else {
+                     console.log("Error");
+                  }
+               }}
                className="px-3 py-1 cursor-pointer bg-purple-600 text-white rounded-lg font-medium"
             >
-               Submit Assessment
+               {submit}
             </button>
          </div>
 
