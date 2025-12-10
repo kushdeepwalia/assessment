@@ -3,28 +3,34 @@
 import React, { useEffect, useState } from "react";
 import questionsData from "@/data/questions.json";
 import {
-   DndContext, DragOverlay, MouseSensor, TouchSensor,
-   useDraggable, useDroppable, useSensor, useSensors
+   DndContext,
+   DragOverlay,
+   MouseSensor,
+   TouchSensor,
+   useDraggable,
+   useDroppable,
+   useSensor,
+   useSensors,
 } from "@dnd-kit/core";
 import { createPortal } from "react-dom";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 
-function Box({ label, dragging, color }) {
+/* ---------- UI COMPONENTS ---------- */
+
+function Box({ dragging, color }) {
    return (
       <div
-         style={{ backgroundColor: color, opacity: dragging ? "70%" : "unset" }}
-         className={`sm:w-36 sm:h-36 w-24 h-24 flex items-center justify-center
-      rounded-xl font-bold sm:text-base text-sm text-white shadow-md select-none
-      transition
-    `}
-      >
-         {label}
-      </div>
+         style={{
+            backgroundColor: color,
+            opacity: dragging ? 0.7 : 1,
+         }}
+         className="sm:w-36 sm:h-36 w-24 h-24 rounded-xl shadow-md select-none transition"
+      />
    );
 }
 
-function DraggableBox({ id, label, showHeight, color }) {
+function DraggableBox({ id, color }) {
    const { setNodeRef, listeners, attributes } = useDraggable({ id });
 
    return (
@@ -32,9 +38,9 @@ function DraggableBox({ id, label, showHeight, color }) {
          ref={setNodeRef}
          {...listeners}
          {...attributes}
-         className={`cursor-move flex items-center justify-center ${showHeight ? "sm:h-48 h-36" : ""}`}
+         className="cursor-move flex items-center justify-center"
       >
-         <Box label={label} color={color} />
+         <Box color={color} dragging={false} />
       </div>
    );
 }
@@ -55,53 +61,82 @@ function DroppableBox({ id, children }) {
    );
 }
 
-const generateColorPalette = (index) => {
+/* ---------- HELPERS ---------- */
+
+function shuffleArray(arr) {
+   const copy = [...arr];
+   for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+   }
+   return copy;
+}
+
+// Generates 4 HSL colors with:
+// - fixed random hue
+// - rich saturation
+// - lightness spread with min gap 10
+const generateColorPalette = () => {
    // 1. Random hue (0–360)
    const hue = Math.floor(Math.random() * 360);
 
    // 2. Controlled saturation (keeps colors rich)
    const saturation = 60 + Math.random() * 15; // 60–75%
 
-   // 3. SAFE dark-lightness range (no black / grey / white)
-   const MIN_L = 22;
-   const MAX_L = 42;
+   // 3. SAFE lightness range (no pure black, no pure white, not flat grey)
+   const MIN_L = 20;
+   const MAX_L = 75;
+   const GAP = 10;
 
-   const arr = [];
+   // Need span for 4 shades: 3 gaps of 10 => 30
+   const maxStart = MAX_L - GAP * 3; // 75 - 30 = 45
+   const start =
+      MIN_L + Math.floor(Math.random() * (maxStart - MIN_L + 1));
 
-   while (arr.length < 4) {
-      const num =
-         Math.floor(Math.random() * (MAX_L - MIN_L + 1)) + MIN_L;
+   const lightnessValues = [
+      start,
+      start + GAP,
+      start + GAP * 2,
+      start + GAP * 3,
+   ];
 
-      const isValid = arr.every(
-         (existing) => Math.abs(existing - num) >= 10
-      );
-
-      if (isValid) {
-         arr.push(num);
-      }
-   }
-
-   // Optional: darker → lighter order
-   arr.sort((a, b) => a - b);
-
-   const shades = arr.map(
+   const shades = lightnessValues.map(
       (lightness) => `hsl(${hue}, ${saturation}%, ${lightness}%)`
    );
 
    return shades;
 };
 
+// Turn shades into objects with id + lightness for comparison
+const generateColorObjects = (count) => {
+   const shades = generateColorPalette().slice(0, count);
 
-const generateColorMap = (options, index) => {
-   const shades = generateColorPalette(index);
-   const map = {};
+   const items = shades.map((color, index) => {
+      const lightnessMatch = color.match(/(\d+)%\)$/);
+      const lightness = lightnessMatch ? Number(lightnessMatch[1]) : 0;
 
-   options.forEach((opt, i) => {
-      map[opt] = shades[i];
+      return {
+         id: `color-${index}`,
+         color,
+         lightness,
+      };
    });
 
-   return map;
+   // Important: shuffle so they DON'T appear already sorted
+   return shuffleArray(items);
 };
+
+// Given a list of color objects + direction, return the correct order
+const getCorrectOrderFromArray = (items, direction) => {
+   if (direction === "dark-to-light") {
+      // darkest first → lowest lightness first
+      return [...items].sort((a, b) => a.lightness - b.lightness);
+   }
+   // default: light-to-dark → highest lightness first
+   return [...items].sort((a, b) => b.lightness - a.lightness);
+};
+
+/* ---------- MAIN COMPONENT ---------- */
 
 export default function Assessment() {
    const totalQuestions = questionsData.length;
@@ -110,34 +145,39 @@ export default function Assessment() {
    const [activeId, setActiveId] = useState(null);
    const [mounted, setMounted] = useState(false);
 
-
-   const question = questionsData[currentIndex];
-
-   const [colorMap, setColorMap] = useState(
-      generateColorMap(question.options, currentIndex)
-   );
-   const boxes = question.options;
-
-   useEffect(() => {
-      setColorMap(generateColorMap(question.options, currentIndex));
-   }, [currentIndex]);
+   // Colors stored per question: { [questionId]: ColorObject[] }
+   const [questionColors, setQuestionColors] = useState(() => {
+      const initial = {};
+      questionsData.forEach((q) => {
+         const count = q.optionCount || 4;
+         initial[q.id] = generateColorObjects(count);
+      });
+      return initial;
+   });
 
    const router = useRouter();
+   const question = questionsData[currentIndex];
+   const colors = questionColors[question.id] || [];
 
-   // Redirected here without name/age
-   if (!getCookie("name") || !getCookie("age")) {
-      router.push("/");
-   }
+   /* ---------- GUARD: NAME / AGE COOKIES ---------- */
+   useEffect(() => {
+      const name = getCookie("name");
+      const age = getCookie("age");
+      if (!name || !age) {
+         router.push("/");
+      }
+   }, [router]);
 
+   /* ---------- SENSORS ---------- */
    const mouseSensor = useSensor(MouseSensor);
    const touchSensor = useSensor(TouchSensor, {
       activationConstraint: { delay: 100, tolerance: 5 },
    });
    const sensors = useSensors(mouseSensor, touchSensor);
 
+   /* ---------- DND HANDLERS ---------- */
+
    const onDragStart = (event) => {
-      console.log("Drag Start:", event.active);
-      console.log("Option Indexes:", question.correctValue);
       setActiveId(event.active.id);
       setMounted(true);
       document.body.style.overflow = "hidden";
@@ -148,42 +188,65 @@ export default function Assessment() {
       setActiveId(null);
       document.body.style.overflow = "";
 
-      if (!over) return;
+      if (!over || active.id === over.id) return;
 
-      const isSelectType = typeof question.correctValue !== "undefined";
+      const qId = question.id;
+      const direction = question.direction || "light-to-dark";
 
-      // SELECT TYPE → Drop a COPY
-      if (isSelectType) {
-         setAnswers({
-            ...answers,
-            [question.id]: active.id,
-         });
-         return;
-      }
+      setQuestionColors((prev) => {
+         const currentList = prev[qId];
+         if (!currentList) return prev;
 
-      // ORDER TYPE → Swap
-      if (active.id !== over.id) {
-         const oldIndex = boxes.indexOf(active.id);
-         const newIndex = boxes.indexOf(over.id);
+         const oldIndex = currentList.findIndex((c) => c.id === active.id);
+         const newIndex = currentList.findIndex((c) => c.id === over.id);
+         if (oldIndex === -1 || newIndex === -1) return prev;
 
-         const reordered = [...boxes];
-         [reordered[oldIndex], reordered[newIndex]] = [
-            reordered[newIndex],
-            reordered[oldIndex],
+         const updated = [...currentList];
+         [updated[oldIndex], updated[newIndex]] = [
+            updated[newIndex],
+            updated[oldIndex],
          ];
 
-         setAnswers({
-            ...answers,
-            [question.id]: reordered,
-         });
+         // Compute correctness based on updated order
+         const userOrderIds = updated.map((c) => c.id);
+         const correctOrderIds = getCorrectOrderFromArray(
+            updated,
+            direction
+         ).map((c) => c.id);
 
-         question.options = reordered; // update view instantly
-      }
+         const isCorrect =
+            JSON.stringify(userOrderIds) ===
+            JSON.stringify(correctOrderIds);
+
+         // store answer per question
+         setAnswers((prevAns) => ({
+            ...prevAns,
+            [qId]: {
+               isCorrect,
+               order: userOrderIds,
+            },
+         }));
+
+         return {
+            ...prev,
+            [qId]: updated,
+         };
+      });
    };
 
+   const onDragCancel = () => {
+      document.body.style.overflow = "";
+      setActiveId(null);
+   };
 
-   const goNext = () => setCurrentIndex((i) => Math.min(i + 1, totalQuestions - 1));
-   const goPrev = () => setCurrentIndex((i) => Math.max(i - 1, 0));
+   /* ---------- NAVIGATION ---------- */
+
+   const goNext = () =>
+      setCurrentIndex((i) => Math.min(i + 1, totalQuestions - 1));
+   const goPrev = () =>
+      setCurrentIndex((i) => Math.max(i - 1, 0));
+
+   /* ---------- SUBMIT ---------- */
 
    const handleSubmit = () => {
       const data = {
@@ -198,9 +261,15 @@ export default function Assessment() {
       deleteCookie("age");
 
       alert("Assessment Submitted! Thank you.");
-
       router.push("/");
-   }
+   };
+
+   /* ---------- ACTIVE COLOR FOR OVERLAY ---------- */
+
+   const activeColor =
+      activeId && colors.find((c) => c.id === activeId)?.color;
+
+   /* ---------- RENDER ---------- */
 
    return (
       <div className="min-h-screen bg-gray-100">
@@ -217,10 +286,14 @@ export default function Assessment() {
                      key={q.id}
                      onClick={() => setCurrentIndex(index)}
                      className={`px-2 py-1 rounded-lg text-sm font-medium
-                         ${answers[q.id] ? "bg-green-500 text-white" : ""}
+                ${answers[q.id]
+                           ? "bg-green-500 text-white"
+                           : ""
+                        }
                 ${currentIndex === index && !answers[q.id]
                            ? "bg-blue-600 text-white"
-                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"}
+                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }
               `}
                   >
                      {q.id}
@@ -228,110 +301,74 @@ export default function Assessment() {
                ))}
             </div>
 
-            <button onClick={() => handleSubmit()} className="px-3 py-1 cursor-pointer bg-purple-600 text-white rounded-lg font-medium">
+            <button
+               onClick={handleSubmit}
+               className="px-3 py-1 cursor-pointer bg-purple-600 text-white rounded-lg font-medium"
+            >
                Submit Assessment
             </button>
          </div>
 
          <div className="flex flex-col items-center pt-24 px-4">
-            <h2 className="text-base md:text-lg font-semibold mb-4 text-center">
+            <h2 className="text-base md:text-lg font-semibold mb-2 text-center">
                Q{question.id}) {question.question}
             </h2>
+            <p className="text-xs md:text-sm text-gray-500 mb-4">
+               {question.direction === "dark-to-light"
+                  ? "Drag to arrange from darkest to lightest."
+                  : "Drag to arrange from lightest to darkest."}
+            </p>
 
             {/* DND */}
             <DndContext
                sensors={sensors}
                onDragStart={onDragStart}
                onDragEnd={onDragEnd}
-               onDragCancel={() => {
-                  document.body.style.overflow = "";
-                  setActiveId(null);
-               }}
+               onDragCancel={onDragCancel}
             >
-               {/* TYPE 1: SEQUENCE / ORDER QUESTIONS */}
-               {question.correctOrder && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-0 md:gap-4 bg-white p-5 rounded-2xl shadow max-w-xl md:max-w-3xl w-full">
-                     {boxes.map((box, index) => (
-                        <DroppableBox key={box} id={box}>
-                           <DraggableBox color={colorMap[box]} id={box} label={""} />
-                        </DroppableBox>
-                     ))}
-                  </div>
-               )}
-
-               {/* TYPE 2: SELECT QUESTIONS */}
-               {typeof question.correctValue !== "undefined" && (
-                  <div className="bg-white p-5 rounded-2xl shadow max-w-xl md:max-w-3xl w-full flex flex-col gap-y-4 items-center">
-
-                     {/* All draggable options */}
-                     <div className="grid grid-cols-2 md:grid-cols-4 gap-0 md:gap-4 w-full">
-                        {boxes.map((box) => (
-                           <DraggableBox
-                              key={box}
-                              id={box}
-                              showHeight={question.correctValue !== undefined}
-                              label={box}
-                           />
-                        ))}
-                     </div>
-
-                     {/* Drop Target */}
-                     <DroppableBox id={question.correctValue}>
-                        <div className="border border-dashed border-gray-500 
-          w-full h-full flex items-center justify-center rounded-xl">
-                           {answers[question.id] ? (
-                              <Box label={answers[question.id]} dragging={false} />
-                           ) : (
-                              <div className="text-gray-500 border border-dashed border-gray-500 
-          w-full h-full flex items-center justify-center rounded-xl">
-                                 Drop Here
-                              </div>
-                           )}
-                        </div>
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-0 md:gap-4 bg-white p-5 rounded-2xl shadow max-w-xl md:max-w-3xl w-full">
+                  {colors.map((item) => (
+                     <DroppableBox key={item.id} id={item.id}>
+                        <DraggableBox id={item.id} color={item.color} />
                      </DroppableBox>
-
-                  </div>
-               )}
+                  ))}
+               </div>
 
                {/* Overlay */}
                {mounted &&
                   createPortal(
                      <DragOverlay adjustScale={false}>
-                        {activeId ? <Box label={activeId} dragging /> : null}
+                        {activeId && activeColor ? (
+                           <Box dragging color={activeColor} />
+                        ) : null}
                      </DragOverlay>,
                      document.body
                   )}
-            </DndContext >
+            </DndContext>
 
             {/* Buttons */}
-            < div className="flex justify-between items-center w-full max-w-xl md:max-w-3xl mt-6" >
+            <div className="flex justify-between items-center w-full max-w-xl md:max-w-3xl mt-6">
                {/* Prev */}
-               {
-                  currentIndex > 0 && (
-                     <button
-                        onClick={goPrev}
-                        className="px-6 py-2 bg-gray-400 hover:bg-gray-500 
-              text-white rounded-lg font-medium"
-                     >
-                        Prev
-                     </button>
-                  )
-               }
+               {currentIndex > 0 && (
+                  <button
+                     onClick={goPrev}
+                     className="px-6 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-medium"
+                  >
+                     Prev
+                  </button>
+               )}
 
                {/* Next */}
-               {
-                  currentIndex < totalQuestions - 1 && (
-                     <button
-                        onClick={goNext}
-                        className="ml-auto px-6 py-2 bg-blue-600 hover:bg-blue-700 
-              text-white rounded-lg font-medium"
-                     >
-                        Next
-                     </button>
-                  )
-               }
-            </div >
-         </div >
-      </div >
+               {currentIndex < totalQuestions - 1 && (
+                  <button
+                     onClick={goNext}
+                     className="ml-auto px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+                  >
+                     Next
+                  </button>
+               )}
+            </div>
+         </div>
+      </div>
    );
 }

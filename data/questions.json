@@ -2,137 +2,71 @@
    {
       "id": 1,
       "type": "sequence",
-      "question": "Arrange the days in correct order starting from Monday",
-      "options": [
-         "Wednesday",
-         "Monday",
-         "Thursday",
-         "Tuesday"
-      ],
-      "correctOrder": [
-         "Monday",
-         "Tuesday",
-         "Wednesday",
-         "Thursday"
-      ]
+      "question": "Arrange the colors from light to dark",
+      "optionCount": 4,
+      "direction": "light-to-dark"
    },
    {
       "id": 2,
-      "type": "select",
-      "question": "Select the smallest number",
-      "options": [
-         "10",
-         "3",
-         "7",
-         "12"
-      ],
-      "correctOrder": [
-         "3",
-         "7",
-         "10",
-         "12"
-      ]
+      "type": "sequence",
+      "question": "Arrange the colors from dark to light",
+      "optionCount": 4,
+      "direction": "dark-to-light"
    },
    {
       "id": 3,
       "type": "sequence",
-      "question": "Arrange the alphabet letters in A-Z order",
-      "options": [
-         "C",
-         "B",
-         "A",
-         "D"
-      ],
-      "correctOrder": [
-         "A",
-         "B",
-         "C",
-         "D"
-      ]
+      "question": "Arrange the colors from lightest to darkest",
+      "optionCount": 4,
+      "direction": "light-to-dark"
    },
    {
       "id": 4,
       "type": "sequence",
-      "question": "Arrange the numbers in ascending order",
-      "options": [
-         "30",
-         "5",
-         "12",
-         "25"
-      ],
-      "correctOrder": [
-         "5",
-         "12",
-         "25",
-         "30"
-      ]
+      "question": "Arrange the colors from darkest to lightest",
+      "optionCount": 4,
+      "direction": "dark-to-light"
+   },
+   {
+      "id": 5,
+      "type": "sequence",
+      "question": "Order the colors by increasing brightness",
+      "optionCount": 4,
+      "direction": "light-to-dark"
    },
    {
       "id": 6,
       "type": "sequence",
-      "question": "Arrange the colors based on Rainbow order (VIBGYOR)",
-      "options": [
-         "Yellow",
-         "Red",
-         "Orange",
-         "Blue"
-      ],
-      "correctOrder": [
-         "Red",
-         "Orange",
-         "Yellow",
-         "Blue"
-      ]
+      "question": "Order the colors by decreasing brightness",
+      "optionCount": 4,
+      "direction": "dark-to-light"
+   },
+   {
+      "id": 7,
+      "type": "sequence",
+      "question": "Arrange the colors from lower intensity to higher intensity",
+      "optionCount": 4,
+      "direction": "light-to-dark"
    },
    {
       "id": 8,
       "type": "sequence",
-      "question": "Arrange from shortest to longest",
-      "options": [
-         "cm",
-         "km",
-         "m",
-         "mm"
-      ],
-      "correctOrder": [
-         "mm",
-         "cm",
-         "m",
-         "km"
-      ]
+      "question": "Arrange the colors from higher intensity to lower intensity",
+      "optionCount": 4,
+      "direction": "dark-to-light"
+   },
+   {
+      "id": 9,
+      "type": "sequence",
+      "question": "Sort the colors from least bright to most bright",
+      "optionCount": 4,
+      "direction": "dark-to-light"
    },
    {
       "id": 10,
       "type": "sequence",
-      "question": "Arrange numbers in descending order",
-      "options": [
-         "2",
-         "9",
-         "6",
-         "3"
-      ],
-      "correctOrder": [
-         "9",
-         "6",
-         "3",
-         "2"
-      ]
-   },
-   {
-      "id": 12,
-      "type": "sequence",
-      "question": "Arrange the events in daily routine order",
-      "options": [
-         "Sleep",
-         "Lunch",
-         "Wake up",
-         "Breakfast"
-      ],
-      "correctOrder": [
-         "Wake up",
-         "Breakfast",
-         "Lunch",
-         "Sleep"
-      ]
+      "question": "Sort the colors from most bright to least bright",
+      "optionCount": 4,
+      "direction": "light-to-dark"
    }
 ]
