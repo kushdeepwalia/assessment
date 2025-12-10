@@ -480,7 +480,7 @@ export default function Assessment() {
                   createPortal(
                      <DragOverlay adjustScale={false}>
                         {activeId && activeColor ? (
-                           <Box dragging color={activeColor} />
+                           <Box dragging color={colors.find((c) => c.id === activeId)?.color} />
                         ) : null}
                      </DragOverlay>,
                      document.body
@@ -488,7 +488,7 @@ export default function Assessment() {
             </DndContext>
 
             {/* Buttons */}
-            <div className="flex justify-between items-center max-w-xl md:max-w-3xl sm:w-full w-2/3 mt-6">
+            <div className="flex justify-between select-none items-center max-w-xl md:max-w-3xl sm:w-full w-2/3 mt-6">
                {/* Prev */}
                {currentIndex > 0 && (
                   <button
