@@ -384,15 +384,15 @@ export default function Assessment() {
       <div className="min-h-screen bg-gray-100">
          {/* Top Navbar */}
 
-         <div className="fixed top-0 w-full bg-white shadow-md flex items-center px-4 py-3 z-50">
+         <div className="fixed top-0 w-full bg-white shadow-md flex items-center px-2 sm:px-4 py-3 z-50">
             {/* LEFT */}
-            <div className="font-semibold text-gray-700 whitespace-nowrap">
+            <div className="font-semibold text-sm sm:text-base text-gray-700 whitespace-nowrap">
                Completed: {Object.keys(answers).length} / {totalQuestions}
             </div>
 
             {/* CENTER – PAGINATION */}
             <div className="flex-1 flex justify-center px-2">
-               <div className="flex gap-1 items-center whitespace-nowrap">
+               <div className="flex gap-0.5 sm:gap-1 items-center whitespace-nowrap">
                   {getPagination(totalQuestions, currentIndex, device).map(
                      (item, idx) => {
                         if (item === "dots") {
@@ -443,7 +443,7 @@ export default function Assessment() {
                      alert("Assessment already submitted");
                   }
                }}
-               className="px-3 py-1 cursor-pointer bg-purple-600 text-white rounded-lg font-medium whitespace-nowrap"
+               className="px-3 py-1 cursor-pointer bg-purple-600 text-sm sm:text-base text-white rounded-lg font-medium whitespace-nowrap"
             >
                {submit}
             </button>
@@ -493,7 +493,7 @@ export default function Assessment() {
                {currentIndex > 0 && (
                   <button
                      onClick={goPrev}
-                     className="px-6 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-medium"
+                     className="px-6 py-2 bg-gray-400 cursor-pointer hover:bg-gray-500 text-white rounded-lg font-medium"
                   >
                      Prev
                   </button>
@@ -503,7 +503,7 @@ export default function Assessment() {
                {currentIndex < totalQuestions - 1 && (
                   <button
                      onClick={goNext}
-                     className="ml-auto px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+                     className="ml-auto px-6 py-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
                   >
                      Next
                   </button>
